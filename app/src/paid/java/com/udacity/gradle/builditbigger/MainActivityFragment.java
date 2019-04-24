@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.example.jokepresenter.JokeActivity;
 
@@ -41,10 +42,14 @@ public class MainActivityFragment extends Fragment implements EndpointsAsyncTask
     }
 
     @Override
-    public void onDataReceived(String data) {
-        Intent intent = new Intent(getActivity(), JokeActivity.class);
-        intent.putExtra(JOKE_TAG, data);
-        startActivity(intent);
+    public void onDataReceived(Exception error, String data) {
         pbLoad.setVisibility(View.GONE);
+        if (error != null) {
+            Toast.makeText(getActivity(), getResources().getText(R.string.joke_retrieval_error), Toast.LENGTH_SHORT).show();
+        } else {
+            Intent intent = new Intent(getActivity(), JokeActivity.class);
+            intent.putExtra(JOKE_TAG, data);
+            startActivity(intent);
+        }
     }
 }

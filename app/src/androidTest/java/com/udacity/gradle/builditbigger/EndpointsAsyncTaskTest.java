@@ -2,13 +2,12 @@ package com.udacity.gradle.builditbigger;
 
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
-import android.util.Log;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertFalse;
@@ -21,23 +20,23 @@ public class EndpointsAsyncTaskTest {
     @Rule
     public final ActivityTestRule<MainActivity> activityTestRule = new ActivityTestRule<>(MainActivity.class);
 
+    CountDownLatch latch = new CountDownLatch(1);
+
     @Test
-    public void doInBackground() throws Exception {
-
-        try {
-            EndpointsAsyncTask endpointsAsyncTask = new EndpointsAsyncTask(new EndpointsAsyncTask.DataReceivedCallback() {
-                @Override
-                public void onDataReceived(String data) {
+    public void test() throws InterruptedException {
+        EndpointsAsyncTask endpointsAsyncTask = new EndpointsAsyncTask(new EndpointsAsyncTask.DataReceivedCallback() {
+            @Override
+            public void onDataReceived(Exception error, String data) {
+                if (error != null) {
+                    fail("Failure - exception " + error.toString());
+                } else {
+                    assertNotNull("Failure - string is null", data);
+                    assertFalse("Failure - string is empty", data.isEmpty());
                 }
-            });
-            endpointsAsyncTask.execute();
-
-            String response = endpointsAsyncTask.get(10, TimeUnit.SECONDS);
-
-            assertNotNull("Failure - string is null", response);
-            assertFalse("Failure - string is empty", response.isEmpty());
-        } catch (Exception e) {
-            fail("Failure - exception " + e.toString());
-        }
+                latch.countDown();
+            }
+        });
+        endpointsAsyncTask.execute();
+        latch.await(40, TimeUnit.SECONDS);
     }
 }

@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.example.jokepresenter.JokeActivity;
 import com.google.android.gms.ads.AdListener;
@@ -25,7 +26,6 @@ public class MainActivityFragment extends Fragment implements EndpointsAsyncTask
 
     private static final int AD_PERIOD = 30000;
     public static final String JOKE_TAG = "joke";
-    public static final String AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712";
 
     private InterstitialAd mInterstitialAd;
     private Date timeLastAdShown;
@@ -47,7 +47,7 @@ public class MainActivityFragment extends Fragment implements EndpointsAsyncTask
 
 
         mInterstitialAd = new InterstitialAd(getActivity());
-        mInterstitialAd.setAdUnitId(AD_UNIT_ID);
+        mInterstitialAd.setAdUnitId(getResources().getString(R.string.interstitial_ad_unit_id));
         mInterstitialAd.loadAd(new AdRequest.Builder().build());
 
         mInterstitialAd.setAdListener(new AdListener() {
@@ -91,10 +91,14 @@ public class MainActivityFragment extends Fragment implements EndpointsAsyncTask
     }
 
     @Override
-    public void onDataReceived(String data) {
-        Intent intent = new Intent(getActivity(), JokeActivity.class);
-        intent.putExtra(JOKE_TAG, data);
-        startActivity(intent);
+    public void onDataReceived(Exception error, String data) {
         pbLoad.setVisibility(View.GONE);
+        if (error != null) {
+            Toast.makeText(getActivity(), getResources().getText(R.string.joke_retrieval_error), Toast.LENGTH_SHORT).show();
+        } else {
+            Intent intent = new Intent(getActivity(), JokeActivity.class);
+            intent.putExtra(JOKE_TAG, data);
+            startActivity(intent);
+        }
     }
 }

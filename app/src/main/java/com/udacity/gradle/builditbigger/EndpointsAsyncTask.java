@@ -18,9 +18,10 @@ import java.io.IOException;
 public class EndpointsAsyncTask extends AsyncTask<Void, Void, String> {
     private static MyApi myApiService = null;
     private DataReceivedCallback dataReceivedCallback;
+    private Exception error;
 
     public interface DataReceivedCallback {
-        void onDataReceived(String data);
+        void onDataReceived(Exception error, String data);
     }
 
     public EndpointsAsyncTask(DataReceivedCallback cb) {
@@ -50,12 +51,13 @@ public class EndpointsAsyncTask extends AsyncTask<Void, Void, String> {
         try {
             return myApiService.tellJoke().execute().getData();
         } catch (IOException e) {
-            return e.getMessage();
+            error = e;
+            return "";
         }
     }
 
     @Override
     protected void onPostExecute(String result) {
-        dataReceivedCallback.onDataReceived(result);
+        dataReceivedCallback.onDataReceived(error, result);
     }
 }
